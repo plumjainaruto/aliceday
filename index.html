@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HBD My Bestie</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600&family=Prompt:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            /* Palette: Soft Pink Friendship */
+            --bg-color: #fff5f8;
+            --card-bg: #ffffff;
+            --accent-color: #ff8fa3; /* Pink Pop */
+            --accent-hover: #ff6b85;
+            --text-main: #594a4e; /* Warm Brown */
+            --text-light: #9c8e93;
+            --shadow-soft: 0 10px 40px -10px rgba(255, 143, 163, 0.3);
+            --border-radius: 24px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 225, 230, 1) 0%, transparent 20%),
+                              radial-gradient(circle at 90% 80%, rgba(255, 200, 210, 0.5) 0%, transparent 20%);
+            font-family: 'Prompt', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- Login Screen --- */
+        #login-view {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 245, 248, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.6s ease-out;
+        }
+
+        .login-card {
+            text-align: center;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .icon-lock {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .login-title {
+            font-family: 'Mali', cursive;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input[type="password"] {
+            background: #fff;
+            border: 2px solid #ffe0e6;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-family: 'Prompt', sans-serif;
+            font-size: 1.1rem;
+            text-align: center;
+            width: 240px;
+            outline: none;
+            color: var(--text-main);
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        input:focus { border-color: var(--accent-color); transform: scale(1.02); }
+
+        .btn-main {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-family: 'Mali', cursive;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 143, 163, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-main:active { transform: scale(0.95); }
+        .btn-main:disabled { opacity: 0.7; cursor: wait; }
+
+        /* --- Letter Card --- */
+        #letter-view {
+            display: none;
+            width: 100%;
+            max-width: 420px;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .paper-card {
+            background: var(--card-bg);
+            width: 100%;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            margin-bottom: 25px;
+            border: 1px solid #fff0f3;
+        }
+
+        /* --- Upload Area --- */
+        .photo-upload-container {
+            width: 100%;
+            aspect-ratio: 4/3; /* สัดส่วนรูปภาพ */
+            background-color: #fff0f3;
+            border-radius: 18px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px dashed #ffccd5;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .photo-upload-container:hover { border-color: var(--accent-color); background-color: #ffe6eb; }
+
+        .upload-placeholder {
+            text-align: center;
+            color: var(--accent-color);
+            transition: 0.3s;
+            /* ซ่อนข้อความแนะนำไว้ก่อน เพราะเรามีรูป Default */
+            display: none; 
+        }
+        .upload-placeholder svg { width: 40px; height: 40px; margin-bottom: 8px; stroke-width: 1.5; }
+        .upload-placeholder span { font-family: 'Mali', cursive; font-size: 0.9rem; display: block; }
+
+        #user-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* แสดงรูปภาพทันที */
+            display: block; 
+        }
+
+        /* --- Content --- */
+        .letter-content {
+            font-family: 'Mali', cursive;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-main);
+            white-space: pre-line;
+            min-height: 150px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: var(--accent-color);
+            animation: blink 1s infinite;
+            vertical-align: sub;
+            margin-left: 2px;
+        }
+
+        .letter-footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px dashed #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Prompt', sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sticker {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 2rem;
+            transform: rotate(-10deg);
+            opacity: 0.2;
+        }
+
+        /* --- Actions --- */
+        .action-bar {
+            opacity: 0;
+            transition: 0.5s;
+            display: flex;
+            gap: 15px;
+        }
+
+        .error-msg {
+            color: #ff4757;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            font-family: 'Prompt', sans-serif;
+            display: none;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-view">
+        <div class="login-card">
+            <span class="icon-lock">🔒</span>
+            <div class="login-title">For My Bestie</div>
+            <div class="input-group">
+                <input type="password" id="passcode" placeholder="Enter Code (hbd)" autocomplete="off">
+            </div>
+            <button class="btn-main" onclick="unlock()">
+                Open Gift 🎁
+            </button>
+            <div id="error-msg" class="error-msg">Wrong Code! Try 'hbd'</div>
+        </div>
+    </div>
+
+    <div id="letter-view">
+        <div class="paper-card" id="card-to-save">
+            
+            <div class="photo-upload-container" onclick="triggerUpload()">
+                <div class="upload-placeholder" id="upload-hint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <span>Tap to change photo</span>
+                </div>
+                
+                <img id="user-photo" 
+                     src="Happy Birthday to you!.jpg" 
+                     alt="My Bestie" 
+                     onerror="this.style.display='none'; document.getElementById('upload-hint').style.display='block';">
+                
+                <input type="file" id="file-input" hidden accept="image/*" onchange="previewImage(event)">
+            </div>
+
+            <div class="letter-content">
+                <span id="type-area"></span><span id="cursor" class="cursor"></span>
+            </div>
+
+            <div class="letter-footer">
+                <span>Friendship</span>
+                <span id="date-now"></span>
+            </div>
+            
+            <div class="sticker">🎂</div>
+        </div>
+
+        <div class="action-bar" id="action-bar">
+            <button class="btn-main" onclick="saveImage()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Save Image
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const CONFIG = {
+            passcode: 'hbd', // รหัสผ่าน
+            text: `Happy Birthday Alice! 🎉
+
+            ปีนี้ขอให้เป็นปีที่ดี คิดอะไรก็สมหวัง
+            ขอให้สวยๆ รวยๆ (แล้วมาเลี้ยงเราด้วย 555)
+            
+            ขอบคุณที่เป็นเพื่อนที่ดีเสมอมา อยู่บ่น อยู่ฮา
+            อยู่เม้าท์มอยกันไปนานๆ นะ ขอให้เริ่ดๆ สุขภาพดีมีความสุข
+            แล้วตั้งใจเรียน ไว้เจอกันมหาลัยนะอล อย่าลืมใช้ชีวิตให้มีความสุข
+            
+            ไม่ว่าจะสุขหรือเศร้า เราอยู่ข้างแกเสมอ
+            
+            จาก... เพื่อนที่หล่อ.`
+        };
+
+        // --- FUNCTIONS ---
+
+        function unlock() {
+            const code = document.getElementById('passcode').value.toLowerCase();
+            const errorMsg = document.getElementById('error-msg');
+            const loginView = document.getElementById('login-view');
+            const letterView = document.getElementById('letter-view');
+
+            if (code === CONFIG.passcode) {
+                // Unlock Success
+                errorMsg.style.display = 'none';
+                loginView.style.opacity = '0';
+                loginView.style.transform = 'scale(1.1)'; // Effect Zoom out
+                
+                setTimeout(() => {
+                    loginView.style.display = 'none';
+                    letterView.style.display = 'flex';
+                    // Trigger reflow
+                    void letterView.offsetWidth;
+                    letterView.style.opacity = '1';
+                    letterView.style.transform = 'translateY(0)';
+                    
+                    // Start Typing
+                    setTimeout(startTyping, 500);
+                }, 500);
+
+            } else {
+                // Unlock Fail
+                errorMsg.style.display = 'block';
+                document.getElementById('passcode').value = '';
+                document.getElementById('passcode').focus();
+            }
+        }
+
+        // Typing Effect
+        let i = 0;
+        function startTyping() {
+            if (i < CONFIG.text.length) {
+                document.getElementById('type-area').textContent += CONFIG.text.charAt(i);
+                i++;
+                setTimeout(startTyping, 35); // ปรับความเร็วตรงนี้
+            } else {
+                document.getElementById('cursor').style.display = 'none';
+                document.getElementById('action-bar').style.opacity = '1';
+            }
+        }
+
+        // Image Upload Logic
+        function triggerUpload() {
+            document.getElementById('file-input').click();
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('user-photo');
+                    const placeholder = document.getElementById('upload-hint');
+                    
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Save Image Logic
+        function saveImage() {
+            const btn = document.querySelector('.btn-main'); // เลือกปุ่ม save
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = 'Saving...';
+            btn.disabled = true;
+
+            const element = document.getElementById('card-to-save');
+
+            // ใช้ Timeout เล็กน้อยเพื่อให้แน่ใจว่า UI พร้อม
+            setTimeout(() => {
+                html2canvas(element, {
+                    scale: 3, // High Resolution
+                    backgroundColor: null,
+                    useCORS: true,
+                    logging: false,
+                    allowTaint: true
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `HBD-Bestie-${Date.now()}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+
+                    // Reset Button
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }).catch(err => {
+                    console.error(err);
+                    alert('เกิดข้อผิดพลาด ลองใหม่อีกครั้งนะ');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            }, 100);
+        }
+
+        // Init Data
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        document.getElementById('date-now').textContent = new Date().toLocaleDateString('en-US', options);
+
+        // Enter Key Listener
+        document.getElementById('passcode').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') unlock();
+        });
+
+    </script>
+</body>
+</html>
